@@ -1,3 +1,4 @@
+
 import { AppState, Branch } from './types';
 
 // =========================================================================
@@ -38,6 +39,7 @@ export const INITIAL_STATE: AppState = {
     service: 'EXPRESS',
     actWt: 0,
     volWt: 0,
+    ratePerKg: 0, // Manual Rate Init
     senderPh: '',
     senderName: '',
     consName: '',
