@@ -1,3 +1,4 @@
+
 export interface Branch {
     name: string;
     code: string;
@@ -20,6 +21,9 @@ export interface AppState {
     service: 'EXPRESS' | 'ECONOMY';
     actWt: number;
     volWt: number;
+    
+    // Manual Rate Logic
+    ratePerKg: number; // New Manual Field
     
     // Customer
     senderPh: string;
