@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from 'react';
 import { AppState, RateResult, LineItem } from '../types';
 import { findCustomer } from '../services/mockService';
@@ -128,6 +129,7 @@ export const FormView: React.FC<FormViewProps> = ({ data, onChange, onBulkChange
         if (!data.country) errors.push("Destination Country");
         if (!data.service) errors.push("Service Type");
         if (!data.actWt || data.actWt <= 0) errors.push("Actual Weight");
+        if (!data.ratePerKg || data.ratePerKg <= 0) errors.push("Rate Per KG");
         if (!data.senderName) errors.push("Sender Name");
         if (!data.senderPh) errors.push("Sender Phone (WhatsApp)");
         if (!data.consName) errors.push("Consignee Name");
@@ -260,21 +262,32 @@ export const FormView: React.FC<FormViewProps> = ({ data, onChange, onBulkChange
                     </div>
                 </div>
                 
-                {/* Rate Preview Card */}
-                <div className="mt-6 bg-slate-50 dark:bg-slate-950/50 rounded-xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <div className="flex items-center gap-3">
-                         <div className="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/30 flex items-center justify-center text-brand-600 dark:text-brand-400">
-                            <Calculator className="w-5 h-5" />
-                         </div>
-                         <div>
+                {/* Rate Calculation Input Row */}
+                <div className="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+                     <div className="bg-brand-50 dark:bg-brand-900/10 p-4 rounded-xl border border-brand-100 dark:border-brand-900/30">
+                        <label className={labelClass}>Rate Per KG (LKR) <span className="text-red-500">*</span></label>
+                        <div className="relative">
+                            <span className="absolute left-3 top-2.5 text-brand-500 font-bold text-sm">Rs</span>
+                            <input 
+                                type="number" 
+                                className={`${inputClass} pl-10 font-bold text-lg text-brand-700 dark:text-brand-300 bg-white dark:bg-slate-900`}
+                                placeholder="0.00"
+                                value={data.ratePerKg || ''}
+                                onChange={(e) => onChange('ratePerKg', parseFloat(e.target.value) || 0)}
+                            />
+                        </div>
+                     </div>
+
+                     <div className="bg-slate-50 dark:bg-slate-950/50 rounded-xl p-4 border border-slate-200 dark:border-slate-800 flex flex-col justify-center">
+                        <div className="flex items-center justify-between mb-1">
                              <div className="text-xs font-bold text-slate-500 uppercase">Chargeable Weight</div>
-                             <div className="text-lg font-black text-slate-800 dark:text-slate-200">{calculation.chgWt} KG</div>
-                         </div>
-                    </div>
-                    <div className="text-right">
-                        <div className="text-xs font-bold text-slate-500 uppercase">Base Rate</div>
-                        <div className="text-xl font-black text-brand-600 dark:text-brand-400">
-                            {(calculation.total).toLocaleString('en-LK', {style: 'currency', currency: 'LKR'})}
+                             <div className="text-sm font-black text-slate-700 dark:text-slate-300">{calculation.chgWt} KG</div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                             <div className="text-xs font-bold text-slate-500 uppercase">Total Freight</div>
+                             <div className="text-xl font-black text-slate-800 dark:text-white">
+                                {(calculation.total).toLocaleString('en-LK', {style: 'currency', currency: 'LKR'})}
+                            </div>
                         </div>
                     </div>
                 </div>
