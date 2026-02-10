@@ -1,11 +1,12 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { FormView } from './components/FormView';
 import { InvoiceView } from './components/InvoiceView';
 import { LoginOverlay } from './components/LoginOverlay';
 import { PreviewModal } from './components/PreviewModal';
 import { HistoryView } from './components/HistoryView';
-import { DashboardView } from './components/DashboardView'; // Imported
-import { calculateRate, saveInvoice } from './services/mockService';
+import { DashboardView } from './components/DashboardView'; 
+import { saveInvoice } from './services/mockService';
 import { AppState, RateResult, InvoiceData, Branch, HistoryEntry } from './types';
 import { INITIAL_STATE } from './constants';
 import { Moon, Sun, LogOut, Calendar, Clock, FileText, Building2, History, LayoutDashboard, Check } from 'lucide-react';
@@ -69,14 +70,22 @@ const App: React.FC = () => {
 
   const toggleTheme = () => setIsDarkMode(!isDarkMode);
 
+  // Manual Calculation Logic
   useEffect(() => {
-    const { country, service, actWt, volWt } = formData;
-    if (country && actWt > 0) {
-        calculateRate(country, service, actWt, volWt).then(setCalculation);
-    } else {
-        setCalculation({ total: 0, ratePerKg: 0, chgWt: 0 });
-    }
-  }, [formData.country, formData.service, formData.actWt, formData.volWt]);
+    const { actWt, volWt, ratePerKg } = formData;
+    
+    // Chargeable weight is usually rounded up to nearest KG in logistics
+    // We use Math.ceil(Math.max(...))
+    const chgWt = Math.ceil(Math.max(actWt || 0, volWt || 0));
+    
+    const totalFreight = chgWt * (ratePerKg || 0);
+
+    setCalculation({
+        chgWt: chgWt,
+        ratePerKg: ratePerKg || 0,
+        total: totalFreight
+    });
+  }, [formData.actWt, formData.volWt, formData.ratePerKg]);
 
   const handleInputChange = useCallback((field: keyof AppState, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -228,6 +237,7 @@ const App: React.FC = () => {
           service: entry.service,
           actWt: entry.actWt || 0,
           volWt: entry.volWt || 0,
+          ratePerKg: entry.ratePerKg || 0, // Restore manual rate
           senderPh: entry.senderPh,
           senderName: entry.senderName,
           consName: entry.consName,
@@ -249,10 +259,12 @@ const App: React.FC = () => {
           invoiceNo: entry.invoiceNo
       });
 
+      // Recalculate based on restored values
+      const chgWt = entry.chgWt || Math.max(entry.actWt, entry.volWt);
       setCalculation({
           total: entry.total || 0,
           ratePerKg: entry.ratePerKg || 0,
-          chgWt: entry.chgWt || 0
+          chgWt: chgWt
       });
 
       setIsAutoPrinting(false);
